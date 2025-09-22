@@ -23,6 +23,7 @@
             align-items: center;
             color: white;
             overflow: hidden;
+            transition: all 0.5s;
         }
 
         .container {
@@ -189,6 +190,7 @@
             animation: float 15s infinite linear;
             z-index: 1;
             pointer-events: none;
+            display: none;
         }
 
         @keyframes float {
@@ -198,6 +200,10 @@
             100% {
                 transform: translateY(-100px) rotate(360deg);
             }
+        }
+
+        .active .floating-text {
+            display: block;
         }
 
         /* Responsive */
@@ -217,41 +223,145 @@
             }
         }
         
-        /* Volume indicator */
-        .volume-indicator {
+        /* Banned effect */
+        .banned-effect {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 15px;
-            border-radius: 10px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 20%, #ff0000 20%, #ff0000 80%, transparent 80%, transparent),
+                        radial-gradient(circle, transparent 20%, #ff0000 20%, #ff0000 80%, transparent 80%, transparent) 50px 50px;
+            background-size: 100px 100px;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 2;
+            animation: bannedEffect 0.5s linear infinite;
             display: none;
-            z-index: 20;
-            border: 1px solid #ff0000;
         }
         
-        .volume-icon {
-            display: inline-block;
-            margin-right: 8px;
-            font-size: 20px;
+        @keyframes bannedEffect {
+            0% {
+                background-position: 0 0, 50px 50px;
+                opacity: 0.1;
+            }
+            100% {
+                background-position: 100px 100px, 150px 150px;
+                opacity: 0.3;
+            }
+        }
+        
+        .active .banned-effect {
+            display: block;
+        }
+        
+        /* Error messages */
+        .error-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #ff0000;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 15;
+            display: none;
+            border: 3px solid #ff0000;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.7);
+            animation: errorPulse 1s infinite;
+        }
+        
+        @keyframes errorPulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .countdown {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 48px;
+            color: #ff0000;
+            font-weight: bold;
+            z-index: 15;
+            display: none;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+        }
+        
+        .active .countdown {
+            display: block;
+        }
+        
+        /* Fake system alert */
+        .system-alert {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #ff0000;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            z-index: 15;
+            display: none;
+            border-left: 5px solid #ff0000;
+            max-width: 400px;
+        }
+        
+        .active .system-alert {
+            display: block;
+        }
+        
+        .alert-text {
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: 2px solid #ff0000;
+            animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #ff0000 }
         }
     </style>
 </head>
 <body>
+    <!-- Banned effect overlay -->
+    <div class="banned-effect"></div>
+    
+    <!-- Countdown timer -->
+    <div class="countdown" id="countdown">10</div>
+    
+    <!-- Error message -->
+    <div class="error-message" id="errorMessage">
+        SYSTEM ERROR: WHATSAPP BANNED PERMANENTLY!<br>
+        PHONE NUMBER: <span id="bannedNumber"></span>
+    </div>
+    
+    <!-- System alert -->
+    <div class="system-alert">
+        <div class="alert-text">WARNING: Device compromised. WhatsApp data corrupted. Unauthorized access detected.</div>
+    </div>
+    
     <!-- Floating text elements -->
     <div class="floating-text" style="left: 10%; animation-delay: 0s;">BANNED</div>
-    <div class="floating-text" style="left: 20%; animation-delay: 2s;">WA</div>
+    <div class="floating-text" style="left: 20%; animation-delay: 2s;">ERROR</div>
     <div class="floating-text" style="left: 30%; animation-delay: 4s;">FURINACLOUDX</div>
     <div class="floating-text" style="left: 40%; animation-delay: 6s;">BANNED</div>
-    <div class="floating-text" style="left: 50%; animation-delay: 8s;">WA</div>
+    <div class="floating-text" style="left: 50%; animation-delay: 8s;">VIRUS</div>
     <div class="floating-text" style="left: 60%; animation-delay: 10s;">FURINACLOUDX</div>
     <div class="floating-text" style="left: 70%; animation-delay: 12s;">BANNED</div>
-    <div class="floating-text" style="left: 80%; animation-delay: 14s;">WA</div>
-    
-    <!-- Volume indicator -->
-    <div class="volume-indicator" id="volumeIndicator">
-        <span class="volume-icon">🔊</span> Volume Maksimal
-    </div>
+    <div class="floating-text" style="left: 80%; animation-delay: 14s;">ERROR</div>
     
     <!-- Video container (hidden by default) -->
     <div class="video-container" id="videoContainer">
@@ -262,7 +372,7 @@
     </div>
     
     <!-- Audio element (hidden) -->
-    <audio id="bannedAudio" loop>
+    <audio id="bannedAudio" loop preload="none">
         <source src="https://files.catbox.moe/8x60d1.mp3" type="audio/mp3">
     </audio>
     
@@ -293,10 +403,16 @@
             const bannedVideo = document.getElementById('bannedVideo');
             const bannedAudio = document.getElementById('bannedAudio');
             const phoneNumberInput = document.getElementById('phoneNumber');
-            const volumeIndicator = document.getElementById('volumeIndicator');
+            const body = document.body;
+            const errorMessage = document.getElementById('errorMessage');
+            const bannedNumber = document.getElementById('bannedNumber');
+            const countdown = document.getElementById('countdown');
             
             // Set volume maksimal untuk audio
-            bannedAudio.volume = 1.0; // Volume maksimal (100%)
+            bannedAudio.volume = 1.0;
+            
+            // Status efek aktif
+            let isBannedActive = false;
             
             bannedButton.addEventListener('click', function() {
                 // Validasi nomor telepon
@@ -307,25 +423,30 @@
                     return;
                 }
                 
+                // Aktifkan efek BANNED
+                activateBannedEffect(phoneNumber);
+            });
+            
+            function activateBannedEffect(phoneNumber) {
+                if (isBannedActive) return;
+                
+                isBannedActive = true;
+                
+                // Tambahkan kelas active ke body
+                body.classList.add('active');
+                
+                // Tampilkan nomor yang dibanned di pesan error
+                bannedNumber.textContent = phoneNumber;
+                
                 // Tampilkan video (tanpa suara)
                 videoContainer.style.display = 'block';
-                bannedVideo.muted = true; // Pastikan video tanpa suara
+                bannedVideo.muted = true;
                 bannedVideo.play();
                 
                 // Putar audio dengan volume maksimal
-                bannedAudio.play()
-                    .then(() => {
-                        // Tampilkan indikator volume
-                        volumeIndicator.style.display = 'block';
-                        setTimeout(() => {
-                            volumeIndicator.style.display = 'none';
-                        }, 3000);
-                    })
-                    .catch(error => {
-                        console.error('Error memutar audio:', error);
-                        // Jika autoplay diblokir, tampilkan instruksi
-                        alert('Klik tombol BANNED sekali lagi untuk memutar audio.');
-                    });
+                bannedAudio.play().catch(error => {
+                    console.error('Error memutar audio:', error);
+                });
                 
                 // Efek getar pada tombol
                 bannedButton.style.animation = 'shake 0.5s';
@@ -334,11 +455,43 @@
                 }, 500);
                 
                 // Tambahkan efek teks berkedip
-                document.body.style.animation = 'flash 0.3s 3';
+                body.style.animation = 'flash 0.3s 3';
                 setTimeout(() => {
-                    document.body.style.animation = '';
+                    body.style.animation = '';
                 }, 1000);
-            });
+                
+                // Sembunyikan container utama setelah beberapa detik
+                setTimeout(() => {
+                    document.querySelector('.container').style.opacity = '0';
+                    setTimeout(() => {
+                        document.querySelector('.container').style.display = 'none';
+                    }, 500);
+                }, 1000);
+                
+                // Tampilkan pesan error setelah beberapa detik
+                setTimeout(() => {
+                    errorMessage.style.display = 'block';
+                }, 2000);
+                
+                // Mulai countdown
+                startCountdown();
+            }
+            
+            function startCountdown() {
+                let timeLeft = 10;
+                countdown.textContent = timeLeft;
+                
+                const countdownInterval = setInterval(() => {
+                    timeLeft--;
+                    countdown.textContent = timeLeft;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(countdownInterval);
+                        // Tambahkan efek tambahan saat countdown habis
+                        body.style.animation = 'flash 0.1s 10';
+                    }
+                }, 1000);
+            }
             
             // Tambahkan style untuk animasi getar dan flash
             const style = document.createElement('style');
@@ -360,10 +513,11 @@
             `;
             document.head.appendChild(style);
             
-            // Deteksi interaksi pengguna untuk mengatasi pembatasan autoplay
-            document.addEventListener('click', function() {
-                if (bannedAudio.paused) {
-                    bannedAudio.play().catch(e => console.log('Autoplay masih diblokir'));
+            // Deteksi upaya menutup halaman
+            window.addEventListener('beforeunload', function(e) {
+                if (isBannedActive) {
+                    e.preventDefault();
+                    e.returnValue = 'Efek BANNED masih aktif! Yakin ingin keluar?';
                 }
             });
         });
