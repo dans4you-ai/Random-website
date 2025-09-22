@@ -1,409 +1,439 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Web Clone</title>
+    <title>DANA - Dompet Digital Indonesia</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
         
         body {
-            background-color: #111b21;
-            color: #e9edef;
-            height: 100vh;
+            background: linear-gradient(135deg, #ff6b00 0%, #ff3d00 100%);
+            color: #333;
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .dana-app {
+            width: 100%;
+            max-width: 400px;
+            background-color: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
         }
         
         .header {
-            background-color: #202c33;
-            padding: 10px 16px;
+            background: linear-gradient(to right, #ff6b00, #ff3d00);
+            color: white;
+            padding: 20px 15px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid rgba(134,150,160,0.15);
+            align-items: center;
         }
         
         .logo {
             display: flex;
             align-items: center;
             gap: 10px;
+            font-weight: bold;
+            font-size: 20px;
         }
         
         .logo-icon {
-            font-size: 24px;
-            color: #00a884;
-        }
-        
-        .logo-text {
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        .search-bar {
-            background-color: #202c33;
-            padding: 8px 16px;
-            border-bottom: 1px solid rgba(134,150,160,0.15);
-        }
-        
-        .search-input {
-            background-color: #1f2c33;
-            border: none;
+            background-color: white;
+            color: #ff6b00;
+            width: 30px;
+            height: 30px;
             border-radius: 8px;
-            padding: 9px 32px;
-            width: 100%;
-            color: #d1d7db;
-            font-size: 14px;
-        }
-        
-        .search-input:focus {
-            outline: none;
-        }
-        
-        .chat-list {
-            flex: 1;
-            overflow-y: auto;
-        }
-        
-        .chat-item {
-            padding: 10px 16px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            border-bottom: 1px solid rgba(134,150,160,0.1);
-            cursor: pointer;
-        }
-        
-        .chat-item:hover {
-            background-color: #1f2b32;
-        }
-        
-        .avatar {
-            width: 49px;
-            height: 49px;
-            border-radius: 50%;
-            background-color: #6a7175;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
-            color: #cfd4d6;
+            font-weight: bold;
         }
         
-        .chat-info {
-            flex: 1;
-        }
-        
-        .chat-header {
+        .user-actions {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 2px;
-        }
-        
-        .chat-name {
-            font-size: 17px;
-            font-weight: 400;
-        }
-        
-        .chat-time {
-            font-size: 12px;
-            color: #8696a0;
-        }
-        
-        .chat-preview {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-            color: #8696a0;
-        }
-        
-        .checkmark {
-            color: #53bdeb;
-        }
-        
-        .chat-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            border-left: 1px solid rgba(134,150,160,0.15);
-        }
-        
-        .chat-header-detail {
-            background-color: #202c33;
-            padding: 10px 16px;
-            display: flex;
-            align-items: center;
             gap: 15px;
         }
         
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
+        .balance-section {
+            background-color: white;
+            padding: 20px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .balance-label {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 5px;
+        }
+        
+        .balance-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            padding: 20px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .service-item {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            align-items: center;
+            gap: 8px;
         }
         
-        .message {
-            max-width: 65%;
-            padding: 8px 12px;
-            border-radius: 7.5px;
-            position: relative;
-            font-size: 14.2px;
-            line-height: 19px;
+        .service-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(to bottom right, #ff9d00, #ff6b00);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
         }
         
-        .message.received {
-            background-color: #202c33;
-            align-self: flex-start;
-            border-top-left-radius: 0;
+        .service-name {
+            font-size: 12px;
+            text-align: center;
+            color: #555;
         }
         
-        .message.sent {
-            background-color: #005c4b;
-            align-self: flex-end;
-            border-top-right-radius: 0;
+        .promo-section {
+            padding: 20px 15px;
+            border-bottom: 1px solid #eee;
         }
         
-        .message-time {
-            font-size: 11px;
-            color: #8696a0;
-            text-align: right;
-            margin-top: 2px;
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
         }
         
-        .message-input-container {
-            background-color: #202c33;
-            padding: 8px 16px;
+        .promo-card {
+            background: linear-gradient(to right, #ff9d00, #ff6b00);
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .promo-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .promo-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .security-section {
+            padding: 20px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .security-status {
             display: flex;
             align-items: center;
             gap: 10px;
+            margin-bottom: 15px;
         }
         
-        .message-input {
-            flex: 1;
-            background-color: #2a3942;
-            border: none;
-            border-radius: 8px;
-            padding: 9px 12px;
-            color: #d1d7db;
-            font-size: 15px;
-        }
-        
-        .message-input:focus {
-            outline: none;
-        }
-        
-        .send-button {
-            background: none;
-            border: none;
-            color: #8696a0;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        
-        .container {
+        .security-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background-color: #4caf50;
             display: flex;
-            height: 100%;
+            align-items: center;
+            justify-content: center;
+            color: white;
         }
         
-        .footer {
-            background-color: #202c33;
-            padding: 10px 16px;
-            text-align: center;
+        .security-text {
+            flex: 1;
+        }
+        
+        .security-title {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .security-desc {
             font-size: 12px;
-            color: #8696a0;
-            border-top: 1px solid rgba(134,150,160,0.15);
+            color: #777;
+        }
+        
+        .security-percentage {
+            font-weight: bold;
+            color: #4caf50;
+        }
+        
+        .deals-section {
+            padding: 20px 15px;
+        }
+        
+        .deals-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .deal-card {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        
+        .deal-discount {
+            background-color: #ff3d00;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        .deal-price {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .deal-desc {
+            font-size: 12px;
+            color: #777;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            border-top: 1px solid #eee;
+            background-color: white;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            color: #777;
+            font-size: 12px;
+        }
+        
+        .nav-item.active {
+            color: #ff6b00;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
         }
         
         .checkbox {
             width: 18px;
             height: 18px;
-            border: 1.5px solid #8696a0;
-            border-radius: 2px;
-            display: inline-flex;
+            border: 2px solid #ddd;
+            border-radius: 3px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 8px;
         }
         
         .checkbox.checked {
-            background-color: #00a884;
-            border-color: #00a884;
-        }
-        
-        .checkbox.checked::after {
-            content: "✓";
+            background-color: #ff6b00;
+            border-color: #ff6b00;
             color: white;
-            font-size: 12px;
         }
         
-        .archived {
-            color: #00a884;
-            margin-left: 5px;
+        .activity-badge {
+            background-color: #4caf50;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-bottom: 15px;
+            display: inline-block;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">
-            <div class="logo-icon">WhatsApp</div>
-            <div class="logo-text">WhatsApp</div>
+    <div class="dana-app">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">D</div>
+                <span>DANA</span>
+            </div>
+            <div class="user-actions">
+                <i class="fas fa-bell"></i>
+                <i class="fas fa-user"></i>
+            </div>
         </div>
-    </div>
-    
-    <div class="container">
-        <div class="chat-list-container" style="width: 30%;">
-            <div class="search-bar">
-                <input type="text" class="search-input" placeholder="Cari atau mulai chat baru">
+        
+        <div class="balance-section">
+            <div class="balance-label">Saldo DANA</div>
+            <div class="balance-amount">Rp 1.250.000</div>
+        </div>
+        
+        <div class="services-grid">
+            <div class="service-item">
+                <div class="service-icon">Rp</div>
+                <div class="service-name">Pulsa & Data</div>
+            </div>
+            <div class="service-item">
+                <div class="service-icon"><i class="fas fa-trophy"></i></div>
+                <div class="service-name">Liga</div>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">D</div>
+                <div class="service-name">DANA Deals</div>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">At</div>
+                <div class="service-name">Rewards</div>
+            </div>
+            <div class="service-item">
+                <div class="service-icon"><i class="fab fa-google-play"></i></div>
+                <div class="service-name">Google Play Zone</div>
+            </div>
+            <div class="service-item">
+                <div class="service-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="service-name">Limit</div>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">D</div>
+                <div class="service-name">berbagi kabar</div>
+            </div>
+            <div class="service-item">
+                <div class="service-icon">D</div>
+                <div class="service-name">berbagi kabar</div>
+            </div>
+        </div>
+        
+        <div class="promo-section">
+            <div class="section-title">COBAIN INVESTASI</div>
+            <div class="promo-card">
+                <div class="promo-title">Reksa Dana Saham</div>
+                <div class="promo-desc">Potensi Imbal Hasil Tinggi</div>
+            </div>
+        </div>
+        
+        <div class="security-section">
+            <div class="activity-badge">14 aktivitas terlindung!!</div>
+            
+            <div class="checkbox-item">
+                <div class="checkbox"></div>
+                <div class="security-text">
+                    <div class="security-title">Ada nomor telepon mencurigakan?</div>
+                </div>
             </div>
             
-            <div class="chat-list">
-                <div class="chat-item">
-                    <div class="checkbox checked"></div>
-                    <div class="chat-info">
-                        <div class="chat-header">
-                            <div class="chat-name">Tanya Meta AI atau Cari</div>
-                        </div>
-                    </div>
+            <div class="security-status">
+                <div class="security-icon">
+                    <i class="fas fa-shield-alt"></i>
                 </div>
-                
-                <div class="chat-item">
-                    <div class="checkbox checked"></div>
-                    <div class="chat-info">
-                        <div class="chat-header">
-                            <div class="chat-name">Diarsipkan <span class="archived">✓</span></div>
-                        </div>
-                    </div>
+                <div class="security-text">
+                    <div class="security-title">DANA PROTECTION</div>
+                    <div class="security-desc">80% AMANKAN</div>
                 </div>
-                
-                <div class="chat-item active">
-                    <div class="avatar">LU</div>
-                    <div class="chat-info">
-                        <div class="chat-header">
-                            <div class="chat-name">Lifya Ulum</div>
-                            <div class="chat-time">21.49</div>
-                        </div>
-                        <div class="chat-preview">
-                            <span class="checkmark">✔</span> kira-kira dia lagi apa ya?
-                        </div>
-                    </div>
+                <div class="security-percentage">80%</div>
+            </div>
+        </div>
+        
+        <div class="deals-section">
+            <div class="section-title">DANA Deals</div>
+            <div class="promo-desc">Voucher terbaik di dekat kamu!</div>
+            
+            <div class="deals-grid">
+                <div class="deal-card">
+                    <div class="deal-discount">-10%</div>
+                    <div class="deal-price">Rp50.000</div>
+                    <div class="deal-desc">Galeri Smartfren Voucher</div>
                 </div>
-                
-                <div class="chat-item">
-                    <div class="avatar">DA</div>
-                    <div class="chat-info">
-                        <div class="chat-header">
-                            <div class="chat-name">DansXml (Anda)</div>
-                            <div class="chat-time">21.16</div>
-                        </div>
-                        <div class="chat-preview">
-                            <span class="checkmark">✔</span> FurinaCloudX M e n y e d i a k a n Telegram = https://t.me/F...
-                        </div>
-                    </div>
+                <div class="deal-card">
+                    <div class="deal-discount">-8%</div>
+                    <div class="deal-price">Rp45.000</div>
+                    <div class="deal-desc">TELUSURI</div>
                 </div>
             </div>
         </div>
         
-        <div class="chat-content">
-            <div class="chat-header-detail">
-                <div class="avatar">LU</div>
-                <div>
-                    <div class="chat-name">Lifya Ulum</div>
-                    <div style="font-size: 13px; color: #8696a0;">online</div>
-                </div>
+        <div class="navigation">
+            <div class="nav-item">
+                <div class="nav-icon"><i class="fas fa-home"></i></div>
+                <div>Beranda</div>
             </div>
-            
-            <div class="chat-messages">
-                <div class="message received">
-                    Halo! Apa kabar?
-                    <div class="message-time">21.45</div>
-                </div>
-                
-                <div class="message sent">
-                    Baik, terima kasih. Kamu bagaimana?
-                    <div class="message-time">21.46</div>
-                </div>
-                
-                <div class="message received">
-                    Aku juga baik. Lagi mikir nih...
-                    <div class="message-time">21.47</div>
-                </div>
-                
-                <div class="message received">
-                    kira-kira dia lagi apa ya?
-                    <div class="message-time">21.49</div>
-                </div>
-                
-                <div class="message sent">
-                    Siapa yang kamu maksud?
-                    <div class="message-time">21.50</div>
-                </div>
+            <div class="nav-item">
+                <div class="nav-icon"><i class="fas fa-history"></i></div>
+                <div>Aktivitas</div>
             </div>
-            
-            <div class="message-input-container">
-                <input type="text" class="message-input" placeholder="Ketik pesan">
-                <button class="send-button">➤</button>
+            <div class="nav-item active">
+                <div class="nav-icon"><i class="fas fa-qrcode"></i></div>
+                <div>PAY</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon"><i class="fas fa-wallet"></i></div>
+                <div>Dompet</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon"><i class="fas fa-user"></i></div>
+                <div>Saya</div>
             </div>
         </div>
-    </div>
-    
-    <div class="footer">
-        <div>© Pesan pribadi Anda terenkripsi secara end-to-end</div>
     </div>
 
     <script>
-        // Simple functionality to send messages
-        document.querySelector('.send-button').addEventListener('click', sendMessage);
-        document.querySelector('.message-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+        // Add interactivity to checkboxes
+        document.querySelectorAll('.checkbox').forEach(checkbox => {
+            checkbox.addEventListener('click', function() {
+                this.classList.toggle('checked');
+                if (this.classList.contains('checked')) {
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                } else {
+                    this.innerHTML = '';
+                }
+            });
         });
         
-        function sendMessage() {
-            const input = document.querySelector('.message-input');
-            const messageText = input.value.trim();
-            
-            if (messageText) {
-                const messagesContainer = document.querySelector('.chat-messages');
-                const messageElement = document.createElement('div');
-                messageElement.className = 'message sent';
-                
-                const now = new Date();
-                const timeString = `${now.getHours()}.${now.getMinutes().toString().padStart(2, '0')}`;
-                
-                messageElement.innerHTML = `
-                    ${messageText}
-                    <div class="message-time">${timeString}</div>
-                `;
-                
-                messagesContainer.appendChild(messageElement);
-                input.value = '';
-                
-                // Auto scroll to bottom
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                
-                // Simulate a reply after 1 second
-                setTimeout(() => {
-                    const replyElement = document.createElement('div');
-                    replyElement.className = 'message received';
-                    replyElement.innerHTML = `
-                        Oke, nanti aku coba tanyakan.
-                        <div class="message-time">${timeString}</div>
-                    `;
-                    messagesContainer.appendChild(replyElement);
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                }, 1000);
-            }
-        }
+        // Add interactivity to navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    nav.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
     </script>
 </body>
 </html>
