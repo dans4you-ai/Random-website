@@ -206,6 +206,82 @@
             display: block;
         }
 
+        /* Phone Lock Screen */
+        .phone-lock {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
+        .lock-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            color: #ff0000;
+            animation: lockShake 0.5s infinite alternate;
+        }
+
+        @keyframes lockShake {
+            from { transform: translateX(-5px); }
+            to { transform: translateX(5px); }
+        }
+
+        .lock-title {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #ff0000;
+        }
+
+        .lock-subtitle {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #ccc;
+            max-width: 80%;
+        }
+
+        .code-inputs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .code-input {
+            width: 60px;
+            height: 60px;
+            text-align: center;
+            font-size: 24px;
+            border: 2px solid #ff0000;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 10px;
+        }
+
+        .unlock-btn {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .attempts {
+            margin-top: 15px;
+            color: #ff9999;
+            font-size: 14px;
+        }
+
         /* Responsive */
         @media (max-width: 600px) {
             .container {
@@ -220,6 +296,16 @@
             .banned-btn {
                 padding: 12px 25px;
                 font-size: 18px;
+            }
+            
+            .code-input {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+            
+            .lock-title {
+                font-size: 28px;
             }
         }
         
@@ -333,25 +419,69 @@
             from, to { border-color: transparent }
             50% { border-color: #ff0000 }
         }
+        
+        /* Emergency exit (hidden but accessible with Escape key) */
+        .emergency-exit {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 100, 0, 0.3);
+            color: #90ee90;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 100;
+            display: none;
+            cursor: pointer;
+            border: 1px solid #90ee90;
+        }
+        
+        .emergency-exit:hover {
+            background: rgba(0, 100, 0, 0.5);
+        }
+        
+        .active .emergency-exit {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <!-- Banned effect overlay -->
     <div class="banned-effect"></div>
     
+    <!-- Phone Lock Screen -->
+    <div class="phone-lock" id="phoneLock">
+        <div class="lock-icon">🔒</div>
+        <div class="lock-title">HP TERKUNCI</div>
+        <div class="lock-subtitle">WhatsApp telah diblokir permanen. Masukkan kode darurat untuk membuka.</div>
+        
+        <div class="code-inputs">
+            <input type="text" class="code-input" maxlength="1" id="code1">
+            <input type="text" class="code-input" maxlength="1" id="code2">
+            <input type="text" class="code-input" maxlength="1" id="code3">
+            <input type="text" class="code-input" maxlength="1" id="code4">
+        </div>
+        
+        <button class="unlock-btn" id="unlockBtn">BUKA KUNCI</button>
+        <div class="attempts" id="attempts">Percobaan: <span id="attemptCount">0</span>/5</div>
+    </div>
+    
     <!-- Countdown timer -->
     <div class="countdown" id="countdown">10</div>
     
     <!-- Error message -->
     <div class="error-message" id="errorMessage">
-        SYSTEM ERROR: DATA DARI HANDPHONE ANDA TELAH BOCOR, UNTUK MENEBUS DATA ANDA AGAR TIDAK TERSEBAR, HUBUNGI Y
-        TELEGRAM @DansForyu: <span id="bannedNumber"></span>
+        SYSTEM ERROR: WHATSAPP BANNED PERMANENTLY!<br>
+        PHONE NUMBER: <span id="bannedNumber"></span>
     </div>
     
     <!-- System alert -->
     <div class="system-alert">
-        <div class="alert-text">WARNING: GOBLOK SIH, UDAH 2025 PERCAYA KAYAK GINI.</div>
+        <div class="alert-text">WARNING: Device compromised. WhatsApp data corrupted. Unauthorized access detected.</div>
     </div>
+    
+    <!-- Emergency exit (for creator only) -->
+    <div class="emergency-exit" id="emergencyExit">EMERGENCY EXIT (ESC)</div>
     
     <!-- Floating text elements -->
     <div class="floating-text" style="left: 10%; animation-delay: 0s;">BANNED</div>
@@ -392,7 +522,7 @@
         <button class="banned-btn" id="bannedButton">BANNED</button>
         
         <div class="warning">
-            GUNAKAN CODE NEGARA, CONTOH 628XXXX
+            PERINGATAN: Tombol ini akan memicu efek BANNED!
         </div>
     </div>
 
@@ -407,12 +537,83 @@
             const errorMessage = document.getElementById('errorMessage');
             const bannedNumber = document.getElementById('bannedNumber');
             const countdown = document.getElementById('countdown');
+            const emergencyExit = document.getElementById('emergencyExit');
+            const phoneLock = document.getElementById('phoneLock');
+            const unlockBtn = document.getElementById('unlockBtn');
+            const attemptCount = document.getElementById('attemptCount');
+            
+            const codeInputs = [
+                document.getElementById('code1'),
+                document.getElementById('code2'),
+                document.getElementById('code3'),
+                document.getElementById('code4')
+            ];
             
             // Set volume maksimal untuk audio
             bannedAudio.volume = 1.0;
             
             // Status efek aktif
             let isBannedActive = false;
+            let attempts = 0;
+            const maxAttempts = 5;
+            const correctCode = "9999";
+            
+            // Setup code input functionality
+            codeInputs.forEach((input, index) => {
+                input.addEventListener('input', function() {
+                    if (this.value.length === 1 && index < codeInputs.length - 1) {
+                        codeInputs[index + 1].focus();
+                    }
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
+                        codeInputs[index - 1].focus();
+                    }
+                });
+            });
+            
+            // Unlock button functionality
+            unlockBtn.addEventListener('click', function() {
+                const enteredCode = codeInputs.map(input => input.value).join('');
+                
+                if (enteredCode === correctCode) {
+                    // Code correct - unlock the phone
+                    deactivateBannedEffect();
+                    phoneLock.style.display = 'none';
+                    attempts = 0;
+                    attemptCount.textContent = attempts;
+                    codeInputs.forEach(input => input.value = '');
+                } else {
+                    // Code incorrect
+                    attempts++;
+                    attemptCount.textContent = attempts;
+                    
+                    // Shake effect
+                    codeInputs.forEach(input => {
+                        input.style.animation = 'shake 0.5s';
+                        setTimeout(() => {
+                            input.style.animation = '';
+                        }, 500);
+                    });
+                    
+                    // Clear inputs
+                    codeInputs.forEach(input => input.value = '');
+                    codeInputs[0].focus();
+                    
+                    if (attempts >= maxAttempts) {
+                        // Too many attempts
+                        unlockBtn.disabled = true;
+                        unlockBtn.textContent = 'TERKUNCI 30 DETIK';
+                        setTimeout(() => {
+                            unlockBtn.disabled = false;
+                            unlockBtn.textContent = 'BUKA KUNCI';
+                            attempts = 0;
+                            attemptCount.textContent = attempts;
+                        }, 30000);
+                    }
+                }
+            });
             
             bannedButton.addEventListener('click', function() {
                 // Validasi nomor telepon
@@ -425,6 +626,20 @@
                 
                 // Aktifkan efek BANNED
                 activateBannedEffect(phoneNumber);
+            });
+            
+            // Emergency exit dengan tombol ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && isBannedActive) {
+                    deactivateBannedEffect();
+                    phoneLock.style.display = 'none';
+                }
+            });
+            
+            // Emergency exit dengan klik
+            emergencyExit.addEventListener('click', function() {
+                deactivateBannedEffect();
+                phoneLock.style.display = 'none';
             });
             
             function activateBannedEffect(phoneNumber) {
@@ -473,8 +688,40 @@
                     errorMessage.style.display = 'block';
                 }, 2000);
                 
+                // Tampilkan kunci HP setelah beberapa detik
+                setTimeout(() => {
+                    phoneLock.style.display = 'flex';
+                    codeInputs[0].focus();
+                }, 5000);
+                
                 // Mulai countdown
                 startCountdown();
+            }
+            
+            function deactivateBannedEffect() {
+                if (!isBannedActive) return;
+                
+                isBannedActive = false;
+                
+                // Hapus kelas active dari body
+                body.classList.remove('active');
+                
+                // Hentikan video dan audio
+                bannedVideo.pause();
+                bannedVideo.currentTime = 0;
+                bannedAudio.pause();
+                bannedAudio.currentTime = 0;
+                
+                // Sembunyikan video container dan pesan error
+                videoContainer.style.display = 'none';
+                errorMessage.style.display = 'none';
+                countdown.style.display = 'none';
+                
+                // Tampilkan kembali container utama
+                document.querySelector('.container').style.display = 'block';
+                setTimeout(() => {
+                    document.querySelector('.container').style.opacity = '1';
+                }, 50);
             }
             
             function startCountdown() {
@@ -518,6 +765,17 @@
                 if (isBannedActive) {
                     e.preventDefault();
                     e.returnValue = 'Efek BANNED masih aktif! Yakin ingin keluar?';
+                }
+            });
+            
+            // Blokir klik kanan dan pintasan keyboard
+            document.addEventListener('contextmenu', function(e) {
+                if (isBannedActive) e.preventDefault();
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (isBannedActive && (e.ctrlKey || e.key === 'F12')) {
+                    e.preventDefault();
                 }
             });
         });
