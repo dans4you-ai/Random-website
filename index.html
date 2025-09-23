@@ -10,6 +10,10 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         body {
@@ -282,6 +286,44 @@
             font-size: 14px;
         }
 
+        .permanent-lock {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 1000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ff0000;
+            text-align: center;
+        }
+
+        .permanent-lock-icon {
+            font-size: 100px;
+            margin-bottom: 30px;
+            animation: permanentLock 2s infinite;
+        }
+
+        @keyframes permanentLock {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .permanent-lock-title {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .permanent-lock-message {
+            font-size: 18px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+
         /* Responsive */
         @media (max-width: 600px) {
             .container {
@@ -419,35 +461,23 @@
             from, to { border-color: transparent }
             50% { border-color: #ff0000 }
         }
-        
-        /* Emergency exit (hidden but accessible with Escape key) */
-        .emergency-exit {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0, 100, 0, 0.3);
-            color: #90ee90;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 12px;
-            z-index: 100;
-            display: none;
-            cursor: pointer;
-            border: 1px solid #90ee90;
-        }
-        
-        .emergency-exit:hover {
-            background: rgba(0, 100, 0, 0.5);
-        }
-        
-        .active .emergency-exit {
-            display: block;
-        }
     </style>
 </head>
 <body>
     <!-- Banned effect overlay -->
     <div class="banned-effect"></div>
+    
+    <!-- Permanent Lock Screen -->
+    <div class="permanent-lock" id="permanentLock">
+        <div class="permanent-lock-icon">🔐</div>
+        <div class="permanent-lock-title">HP TERKUNCI PERMANEN</div>
+        <div class="permanent-lock-message">
+            SYSTEM ERROR: PERMANENT LOCK ACTIVATED<br>
+            Too many failed attempts detected.<br>
+            Device will remain locked for security reasons.<br>
+            Contact administrator for assistance.
+        </div>
+    </div>
     
     <!-- Phone Lock Screen -->
     <div class="phone-lock" id="phoneLock">
@@ -463,7 +493,7 @@
         </div>
         
         <button class="unlock-btn" id="unlockBtn">BUKA KUNCI</button>
-        <div class="attempts" id="attempts">Percobaan: <span id="attemptCount">0</span>/5</div>
+        <div class="attempts" id="attempts">Percobaan: <span id="attemptCount">0</span>/3</div>
     </div>
     
     <!-- Countdown timer -->
@@ -479,9 +509,6 @@
     <div class="system-alert">
         <div class="alert-text">WARNING: Device compromised. WhatsApp data corrupted. Unauthorized access detected.</div>
     </div>
-    
-    <!-- Emergency exit (for creator only) -->
-    <div class="emergency-exit" id="emergencyExit">EMERGENCY EXIT (ESC)</div>
     
     <!-- Floating text elements -->
     <div class="floating-text" style="left: 10%; animation-delay: 0s;">BANNED</div>
@@ -537,8 +564,8 @@
             const errorMessage = document.getElementById('errorMessage');
             const bannedNumber = document.getElementById('bannedNumber');
             const countdown = document.getElementById('countdown');
-            const emergencyExit = document.getElementById('emergencyExit');
             const phoneLock = document.getElementById('phoneLock');
+            const permanentLock = document.getElementById('permanentLock');
             const unlockBtn = document.getElementById('unlockBtn');
             const attemptCount = document.getElementById('attemptCount');
             
@@ -555,8 +582,49 @@
             // Status efek aktif
             let isBannedActive = false;
             let attempts = 0;
-            const maxAttempts = 5;
+            const maxAttempts = 3;
             const correctCode = "9999";
+            let isPermanentlyLocked = false;
+            
+            // Blokir semua pintasan keyboard
+            function blockAllShortcuts(e) {
+                if (isBannedActive) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }
+            
+            // Blokir klik kanan
+            document.addEventListener('contextmenu', function(e) {
+                if (isBannedActive) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+            
+            // Blokir semua pintasan keyboard
+            document.addEventListener('keydown', function(e) {
+                if (isBannedActive || isPermanentlyLocked) {
+                    // Blokir F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, dll.
+                    if (e.key === 'F12' || 
+                        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) ||
+                        (e.ctrlKey && (e.key === 'U' || e.key === 'u')) ||
+                        (e.altKey && e.key === 'F4')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+            
+            // Blokir attempt untuk keluar dari halaman
+            window.addEventListener('beforeunload', function(e) {
+                if (isBannedActive || isPermanentlyLocked) {
+                    e.preventDefault();
+                    e.returnValue = 'Efek BANNED masih aktif! Yakin ingin keluar?';
+                    return 'Efek BANNED masih aktif! Yakin ingin keluar?';
+                }
+            });
             
             // Setup code input functionality
             codeInputs.forEach((input, index) => {
@@ -570,11 +638,18 @@
                     if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
                         codeInputs[index - 1].focus();
                     }
+                    
+                    // Blokir karakter non-angka
+                    if (!/^[0-9]$/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Tab') {
+                        e.preventDefault();
+                    }
                 });
             });
             
             // Unlock button functionality
             unlockBtn.addEventListener('click', function() {
+                if (isPermanentlyLocked) return;
+                
                 const enteredCode = codeInputs.map(input => input.value).join('');
                 
                 if (enteredCode === correctCode) {
@@ -602,15 +677,8 @@
                     codeInputs[0].focus();
                     
                     if (attempts >= maxAttempts) {
-                        // Too many attempts
-                        unlockBtn.disabled = true;
-                        unlockBtn.textContent = 'TERKUNCI 30 DETIK';
-                        setTimeout(() => {
-                            unlockBtn.disabled = false;
-                            unlockBtn.textContent = 'BUKA KUNCI';
-                            attempts = 0;
-                            attemptCount.textContent = attempts;
-                        }, 30000);
+                        // Terkunci permanen setelah 3x salah
+                        activatePermanentLock();
                     }
                 }
             });
@@ -628,19 +696,24 @@
                 activateBannedEffect(phoneNumber);
             });
             
-            // Emergency exit dengan tombol ESC
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && isBannedActive) {
-                    deactivateBannedEffect();
-                    phoneLock.style.display = 'none';
-                }
-            });
-            
-            // Emergency exit dengan klik
-            emergencyExit.addEventListener('click', function() {
-                deactivateBannedEffect();
+            function activatePermanentLock() {
+                isPermanentlyLocked = true;
                 phoneLock.style.display = 'none';
-            });
+                permanentLock.style.display = 'flex';
+                
+                // Blokir semua interaksi
+                document.addEventListener('keydown', blockAllShortcuts);
+                document.addEventListener('contextmenu', blockAllShortcuts);
+                
+                // Loop video dan audio terus menerus
+                bannedVideo.loop = true;
+                bannedAudio.loop = true;
+                
+                // Fullscreen effect
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                }
+            }
             
             function activateBannedEffect(phoneNumber) {
                 if (isBannedActive) return;
@@ -692,6 +765,9 @@
                 setTimeout(() => {
                     phoneLock.style.display = 'flex';
                     codeInputs[0].focus();
+                    
+                    // Aktifkan blokir pintasan
+                    document.addEventListener('keydown', blockAllShortcuts);
                 }, 5000);
                 
                 // Mulai countdown
@@ -702,6 +778,7 @@
                 if (!isBannedActive) return;
                 
                 isBannedActive = false;
+                isPermanentlyLocked = false;
                 
                 // Hapus kelas active dari body
                 body.classList.remove('active');
@@ -716,6 +793,10 @@
                 videoContainer.style.display = 'none';
                 errorMessage.style.display = 'none';
                 countdown.style.display = 'none';
+                permanentLock.style.display = 'none';
+                
+                // Hapus blokir pintasan
+                document.removeEventListener('keydown', blockAllShortcuts);
                 
                 // Tampilkan kembali container utama
                 document.querySelector('.container').style.display = 'block';
@@ -759,25 +840,6 @@
                 }
             `;
             document.head.appendChild(style);
-            
-            // Deteksi upaya menutup halaman
-            window.addEventListener('beforeunload', function(e) {
-                if (isBannedActive) {
-                    e.preventDefault();
-                    e.returnValue = 'Efek BANNED masih aktif! Yakin ingin keluar?';
-                }
-            });
-            
-            // Blokir klik kanan dan pintasan keyboard
-            document.addEventListener('contextmenu', function(e) {
-                if (isBannedActive) e.preventDefault();
-            });
-            
-            document.addEventListener('keydown', function(e) {
-                if (isBannedActive && (e.ctrlKey || e.key === 'F12')) {
-                    e.preventDefault();
-                }
-            });
         });
     </script>
 </body>
